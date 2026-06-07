@@ -28,6 +28,7 @@ final class AppState: ObservableObject {
     let remapper = CapsLockRemapper()
 
     private let store = ConfigStore()
+    private let recordingEventTap = RecordingEventTap()
     private var localMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
 
@@ -77,6 +78,7 @@ final class AppState: ObservableObject {
     }
 
     deinit {
+        recordingEventTap.stop()
         if let localMonitor {
             NSEvent.removeMonitor(localMonitor)
         }
@@ -161,12 +163,26 @@ final class AppState: ObservableObject {
     }
 
     func beginRecording(_ target: RecordingTarget) {
+        recordingEventTap.stop()
+        removeLocalMonitor()
         recordingTarget = target
-        installLocalMonitorIfNeeded()
+        let didStartRecordingTap = recordingEventTap.start(
+            onRecord: { [weak self] recordedKeyStroke in
+                self?.handleRecordedKeyStroke(recordedKeyStroke)
+            },
+            onCancel: { [weak self] in
+                self?.cancelRecording()
+            }
+        )
+
+        if !didStartRecordingTap {
+            installLocalMonitorIfNeeded()
+        }
     }
 
     func cancelRecording() {
         recordingTarget = nil
+        recordingEventTap.stop()
         removeLocalMonitor()
     }
 
@@ -246,8 +262,31 @@ final class AppState: ObservableObject {
         }
 
         self.recordingTarget = nil
+        recordingEventTap.stop()
         removeLocalMonitor()
         return nil
+    }
+
+    private func handleRecordedKeyStroke(_ recordedKeyStroke: RecordedKeyStroke) {
+        guard let recordingTarget else {
+            recordingEventTap.stop()
+            removeLocalMonitor()
+            return
+        }
+
+        switch recordingTarget {
+        case .trigger(let id):
+            updateMapping(id: id, triggerKeyCode: recordedKeyStroke.keyCode)
+        case .output(let id):
+            updateMapping(
+                id: id,
+                output: Shortcut(keyCode: recordedKeyStroke.keyCode, modifiers: recordedKeyStroke.modifiers)
+            )
+        }
+
+        self.recordingTarget = nil
+        recordingEventTap.stop()
+        removeLocalMonitor()
     }
 
     private func updateRuntimeStatus() {
