@@ -1,0 +1,22 @@
+name: HyperLayer
+options:
+  bundleIdPrefix: com.dade
+  deploymentTarget:
+    macOS: "14.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+targets:
+  HyperLayer:
+    type: application
+    platform: macOS
+    sources:
+      - HyperLayer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dade.HyperLayer
+        INFOPLIST_FILE: HyperLayer/Info.plist
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        ENABLE_HARDENED_RUNTIME: NO

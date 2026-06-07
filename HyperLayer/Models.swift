@@ -1,0 +1,95 @@
+import AppKit
+import CoreGraphics
+import Foundation
+
+struct HyperLayerConfig: Codable, Equatable {
+    var isEnabled: Bool
+    var passThroughUnmappedKeys: Bool
+    var mappings: [LayerMapping]
+
+    static let `default` = HyperLayerConfig(
+        isEnabled: true,
+        passThroughUnmappedKeys: true,
+        mappings: []
+    )
+}
+
+struct LayerMapping: Codable, Identifiable, Equatable {
+    var id: UUID
+    var triggerKeyCode: UInt16?
+    var output: Shortcut?
+    var isEnabled: Bool
+
+    init(
+        id: UUID = UUID(),
+        triggerKeyCode: UInt16? = nil,
+        output: Shortcut? = nil
+    ) {
+        self.id = id
+        self.triggerKeyCode = triggerKeyCode
+        self.output = output
+        self.isEnabled = true
+    }
+}
+
+struct Shortcut: Codable, Hashable, Equatable {
+    var keyCode: UInt16
+    var modifiersRawValue: UInt64
+
+    init(keyCode: UInt16, modifiers: CGEventFlags) {
+        self.keyCode = keyCode
+        self.modifiersRawValue = modifiers.rawValue
+    }
+
+    var modifiers: CGEventFlags {
+        get { CGEventFlags(rawValue: modifiersRawValue) }
+        set { modifiersRawValue = newValue.rawValue }
+    }
+
+    var displayName: String {
+        var parts: [String] = []
+        if modifiers.contains(.maskControl) {
+            parts.append("Ctrl")
+        }
+        if modifiers.contains(.maskAlternate) {
+            parts.append("Opt")
+        }
+        if modifiers.contains(.maskShift) {
+            parts.append("Shift")
+        }
+        if modifiers.contains(.maskCommand) {
+            parts.append("Cmd")
+        }
+        if modifiers.contains(.maskSecondaryFn) {
+            parts.append("Fn")
+        }
+        parts.append(KeyCodeCatalog.name(for: keyCode))
+        return parts.joined(separator: "+")
+    }
+
+    static func from(event: NSEvent) -> Shortcut {
+        Shortcut(keyCode: event.keyCode, modifiers: CGEventFlags.from(event.modifierFlags))
+    }
+}
+
+extension CGEventFlags {
+    static func from(_ flags: NSEvent.ModifierFlags) -> CGEventFlags {
+        var result: CGEventFlags = []
+        if flags.contains(.control) {
+            result.insert(.maskControl)
+        }
+        if flags.contains(.option) {
+            result.insert(.maskAlternate)
+        }
+        if flags.contains(.shift) {
+            result.insert(.maskShift)
+        }
+        if flags.contains(.command) {
+            result.insert(.maskCommand)
+        }
+        if flags.contains(.function) {
+            result.insert(.maskSecondaryFn)
+        }
+        return result
+    }
+}
