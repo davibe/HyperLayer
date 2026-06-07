@@ -12,7 +12,7 @@ final class AppState: ObservableObject {
         didSet {
             store.save(config)
             engine.update(config: config)
-            reconcileRuntime()
+            reconcileRuntime(refreshPermissions: false)
         }
     }
 

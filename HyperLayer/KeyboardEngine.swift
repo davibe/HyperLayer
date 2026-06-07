@@ -18,7 +18,8 @@ final class KeyboardEngine: ObservableObject {
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-    private var config = HyperLayerConfig.default
+    private var shortcutsByTriggerKeyCode: [UInt16: Shortcut] = [:]
+    private var passThroughUnmappedKeys = true
     private var layerIsDown = false
     private var suppressedLayerKeys = Set<UInt16>()
 
@@ -27,7 +28,21 @@ final class KeyboardEngine: ObservableObject {
     }
 
     func update(config: HyperLayerConfig) {
-        self.config = config
+        var nextShortcuts: [UInt16: Shortcut] = [:]
+        for mapping in config.mappings where mapping.isEnabled {
+            guard let triggerKeyCode = mapping.triggerKeyCode,
+                  let output = mapping.output else {
+                continue
+            }
+            nextShortcuts[triggerKeyCode] = output
+        }
+
+        if nextShortcuts != shortcutsByTriggerKeyCode {
+            suppressedLayerKeys.removeAll()
+        }
+
+        shortcutsByTriggerKeyCode = nextShortcuts
+        passThroughUnmappedKeys = config.passThroughUnmappedKeys
     }
 
     @discardableResult
@@ -126,7 +141,7 @@ final class KeyboardEngine: ObservableObject {
                 return nil
             }
 
-            if config.passThroughUnmappedKeys {
+            if passThroughUnmappedKeys {
                 return Unmanaged.passUnretained(event)
             }
 
@@ -158,9 +173,7 @@ final class KeyboardEngine: ObservableObject {
     }
 
     private func shortcut(for triggerKeyCode: UInt16) -> Shortcut? {
-        config.mappings.first { mapping in
-            mapping.isEnabled && mapping.triggerKeyCode.map { $0 == triggerKeyCode } == true
-        }?.output
+        shortcutsByTriggerKeyCode[triggerKeyCode]
     }
 
     private func post(_ shortcut: Shortcut) {
