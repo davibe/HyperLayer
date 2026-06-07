@@ -38,7 +38,7 @@ struct ContentView: View {
 
             HStack(spacing: 16) {
                 PermissionRow(title: "Accessibility", isGranted: appState.permissions.accessibilityGranted)
-                PermissionRow(title: "Input Monitoring", isGranted: inputMonitoringSatisfied)
+                PermissionRow(title: "Input Monitoring", isGranted: appState.permissions.inputMonitoringGranted)
                 Spacer()
             }
 
@@ -53,7 +53,11 @@ struct ContentView: View {
                             appState.permissions.openAccessibilitySettings()
                         }
                     }
-                    if !inputMonitoringSatisfied {
+                    if !appState.permissions.inputMonitoringGranted {
+                        Button("Request Input Monitoring") {
+                            appState.permissions.requestInputMonitoring()
+                            appState.reconcileRuntime()
+                        }
                         Button("Input Monitoring Settings") {
                             appState.permissions.openInputMonitoringSettings()
                         }
@@ -138,10 +142,6 @@ struct ContentView: View {
 
     private var statusColor: Color {
         appState.runtimeStatus == "Running" ? .green : .secondary
-    }
-
-    private var inputMonitoringSatisfied: Bool {
-        appState.permissions.inputMonitoringGranted || appState.engine.isRunning
     }
 }
 

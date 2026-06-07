@@ -30,7 +30,7 @@ final class PermissionManager: ObservableObject {
 
     func refresh() {
         accessibilityGranted = AXIsProcessTrusted()
-        inputMonitoringGranted = Self.canCreateKeyboardTap()
+        inputMonitoringGranted = CGPreflightListenEventAccess()
     }
 
     func requestAccessibility() {
@@ -38,6 +38,11 @@ final class PermissionManager: ObservableObject {
             kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true
         ] as CFDictionary
         _ = AXIsProcessTrustedWithOptions(options)
+        refresh()
+    }
+
+    func requestInputMonitoring() {
+        _ = CGRequestListenEventAccess()
         refresh()
     }
 
@@ -56,26 +61,4 @@ final class PermissionManager: ObservableObject {
         NSWorkspace.shared.open(url)
     }
 
-    private static func canCreateKeyboardTap() -> Bool {
-        let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
-            | CGEventMask(1 << CGEventType.flagsChanged.rawValue)
-
-        let callback: CGEventTapCallBack = { _, _, event, _ in
-            Unmanaged.passUnretained(event)
-        }
-
-        guard let tap = CGEvent.tapCreate(
-            tap: .cghidEventTap,
-            place: .headInsertEventTap,
-            options: .listenOnly,
-            eventsOfInterest: mask,
-            callback: callback,
-            userInfo: nil
-        ) else {
-            return false
-        }
-
-        CFMachPortInvalidate(tap)
-        return true
-    }
 }
