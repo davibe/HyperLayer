@@ -1,8 +1,19 @@
 # HyperLayer
 
-HyperLayer is a macOS GUI app that turns Caps Lock into a configurable keyboard layer.
+Caps Lock as a programmable keyboard layer for macOS.
 
-While enabled, HyperLayer maps the physical Caps Lock key to F18 with `hidutil`, consumes F18 through a keyboard event tap, and emits the configured output shortcut when you press Caps Lock plus a mapped key.
+![HyperLayer screenshot](docs/assets/hyperlayer.png)
+
+HyperLayer suppresses the normal Caps Lock behavior and lets you map `Caps Lock + key` to any keyboard shortcut, including modifier combinations such as `Ctrl+Tab`, `Cmd+Shift+P`, or `Opt+Left Arrow`.
+
+## Features
+
+- Caps Lock layer key.
+- Per-key output shortcuts.
+- Recorder buttons for trigger keys and output shortcuts.
+- Automatic permission checks.
+- Saved configuration.
+- Restores the original Caps Lock mapping when disabled or quit.
 
 ## Build
 
@@ -11,17 +22,18 @@ xcodegen generate
 xcodebuild -project HyperLayer.xcodeproj -scheme HyperLayer -configuration Debug -derivedDataPath build build
 ```
 
-The built app is under:
+## Run
 
-```text
-build/Build/Products/Debug/HyperLayer.app
+```sh
+open build/Build/Products/Debug/HyperLayer.app
 ```
 
 ## Permissions
 
-HyperLayer needs:
+HyperLayer needs Accessibility and Input Monitoring.
 
-- Accessibility, to suppress intercepted events and post replacement shortcuts.
-- Input Monitoring, to receive global keyboard events.
+The app requests what it can and opens the relevant System Settings panes when macOS requires manual approval. It rechecks permissions automatically every 10 seconds.
 
-The app requests Accessibility automatically. macOS may require opening System Settings for Input Monitoring; HyperLayer includes buttons for both panes and polls until the permissions are granted.
+## How It Works
+
+When enabled, HyperLayer maps physical Caps Lock to F18 with `hidutil`, consumes that layer key through a keyboard event tap, and emits the configured output shortcut for matching combinations.
