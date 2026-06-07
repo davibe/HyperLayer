@@ -28,7 +28,7 @@ xcodebuild -project HyperLayer.xcodeproj -scheme HyperLayer -configuration Debug
 
 ## Downloads
 
-- Latest build: download the `HyperLayer-latest` artifact from the latest successful `Build HyperLayer` workflow run.
+- Latest build: download `HyperLayer-latest.zip` from the `latest` release.
 - Releases: each `v*` release includes a zipped app and a SHA-256 checksum.
 
 ## Run
