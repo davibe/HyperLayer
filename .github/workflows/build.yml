@@ -38,7 +38,7 @@ jobs:
           elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
             basename="HyperLayer-$GITHUB_REF_NAME"
           elif [[ "$GITHUB_REF_NAME" == "main" ]]; then
-            basename="HyperLayer-latest"
+            basename="HyperLayer-main"
           else
             safe_ref="$(printf '%s' "$GITHUB_REF_NAME" | tr '/ ' '--')"
             basename="HyperLayer-$safe_ref"
