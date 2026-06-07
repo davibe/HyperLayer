@@ -21,6 +21,7 @@ final class KeyboardEngine: ObservableObject {
     private var shortcutsByTriggerKeyCode: [UInt16: Shortcut] = [:]
     private var passThroughUnmappedKeys = true
     private var layerIsDown = false
+    private var layerFlagsChangedIsDown = false
     private var suppressedLayerKeys = Set<UInt16>()
 
     deinit {
@@ -82,8 +83,7 @@ final class KeyboardEngine: ObservableObject {
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
 
-        layerIsDown = false
-        suppressedLayerKeys.removeAll()
+        resetLayerState()
         isRunning = true
         lastError = nil
         return true
@@ -101,8 +101,7 @@ final class KeyboardEngine: ObservableObject {
         }
         eventTap = nil
         runLoopSource = nil
-        layerIsDown = false
-        suppressedLayerKeys.removeAll()
+        resetLayerState()
         isRunning = false
     }
 
@@ -120,12 +119,8 @@ final class KeyboardEngine: ObservableObject {
 
         let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
 
-        if keyCode == KeyCodeCatalog.layerKeyCode {
-            handleLayerKey(type: type)
-            return nil
-        }
-
-        if keyCode == KeyCodeCatalog.capsLockKeyCode {
+        if keyCode == KeyCodeCatalog.layerKeyCode || keyCode == KeyCodeCatalog.capsLockKeyCode {
+            handleLayerKey(type: type, event: event)
             return nil
         }
 
@@ -160,16 +155,29 @@ final class KeyboardEngine: ObservableObject {
         }
     }
 
-    private func handleLayerKey(type: CGEventType) {
+    private func handleLayerKey(type: CGEventType, event: CGEvent) {
         switch type {
         case .keyDown:
             layerIsDown = true
         case .keyUp:
-            layerIsDown = false
-            suppressedLayerKeys.removeAll()
+            resetLayerState()
+        case .flagsChanged:
+            // Some Caps Lock remap paths surface as flagsChanged instead of keyDown/keyUp.
+            layerFlagsChangedIsDown.toggle()
+            if layerFlagsChangedIsDown {
+                layerIsDown = true
+            } else {
+                resetLayerState()
+            }
         default:
             break
         }
+    }
+
+    private func resetLayerState() {
+        layerIsDown = false
+        layerFlagsChangedIsDown = false
+        suppressedLayerKeys.removeAll()
     }
 
     private func shortcut(for triggerKeyCode: UInt16) -> Shortcut? {

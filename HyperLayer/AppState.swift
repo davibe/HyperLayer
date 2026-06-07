@@ -134,7 +134,7 @@ final class AppState: ObservableObject {
             return
         }
 
-        guard permissions.accessibilityGranted && permissions.inputMonitoringGranted else {
+        guard permissions.accessibilityGranted else {
             engine.stop()
             remapper.restore()
             updateRuntimeStatus()
@@ -202,12 +202,12 @@ final class AppState: ObservableObject {
             runtimeStatus = "Disabled"
         } else if !permissions.accessibilityGranted {
             runtimeStatus = "Waiting for Accessibility"
-        } else if !permissions.inputMonitoringGranted {
-            runtimeStatus = "Waiting for Input Monitoring"
         } else if !remapper.isInstalled {
             runtimeStatus = remapper.lastError ?? "Waiting for Caps Lock remap"
         } else if engine.isRunning {
             runtimeStatus = "Running"
+        } else if !permissions.inputMonitoringGranted {
+            runtimeStatus = "Waiting for Input Monitoring"
         } else {
             runtimeStatus = engine.lastError ?? "Stopped"
         }
