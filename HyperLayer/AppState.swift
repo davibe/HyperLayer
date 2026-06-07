@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import Foundation
+import ServiceManagement
 
 enum RecordingTarget: Equatable {
     case trigger(UUID)
@@ -17,6 +18,9 @@ final class AppState: ObservableObject {
     }
 
     @Published private(set) var runtimeStatus = "Starting"
+    @Published private(set) var opensAtLogin = false
+    @Published private(set) var openAtLoginStatus = ""
+    @Published private(set) var openAtLoginError: String?
     @Published var recordingTarget: RecordingTarget?
 
     let permissions = PermissionManager()
@@ -56,7 +60,14 @@ final class AppState: ObservableObject {
             name: NSApplication.willTerminateNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidBecomeActive),
+            name: NSApplication.didBecomeActiveNotification,
+            object: nil
+        )
 
+        refreshOpenAtLoginStatus()
         permissions.requestAccessibility()
         permissions.requestInputMonitoring()
         permissions.startPolling(every: 10.0) { [weak self] in
@@ -78,6 +89,47 @@ final class AppState: ObservableObject {
 
     func setPassThroughUnmappedKeys(_ isEnabled: Bool) {
         config.passThroughUnmappedKeys = isEnabled
+    }
+
+    func setOpenAtLogin(_ shouldOpenAtLogin: Bool) {
+        openAtLoginError = nil
+
+        do {
+            switch (shouldOpenAtLogin, SMAppService.mainApp.status) {
+            case (true, .enabled), (true, .requiresApproval):
+                break
+            case (true, _):
+                try SMAppService.mainApp.register()
+            case (false, .enabled), (false, .requiresApproval):
+                try SMAppService.mainApp.unregister()
+            case (false, _):
+                break
+            }
+        } catch {
+            openAtLoginError = error.localizedDescription
+        }
+
+        refreshOpenAtLoginStatus()
+    }
+
+    func refreshOpenAtLoginStatus() {
+        switch SMAppService.mainApp.status {
+        case .enabled:
+            opensAtLogin = true
+            openAtLoginStatus = "Enabled"
+        case .requiresApproval:
+            opensAtLogin = true
+            openAtLoginStatus = "Needs approval in Login Items"
+        case .notRegistered:
+            opensAtLogin = false
+            openAtLoginStatus = "Disabled"
+        case .notFound:
+            opensAtLogin = false
+            openAtLoginStatus = "Unavailable"
+        @unknown default:
+            opensAtLogin = false
+            openAtLoginStatus = "Unknown"
+        }
     }
 
     func addMapping() {
@@ -217,5 +269,9 @@ final class AppState: ObservableObject {
     @objc private func appWillTerminate() {
         engine.stop()
         remapper.restore()
+    }
+
+    @objc private func appDidBecomeActive() {
+        refreshOpenAtLoginStatus()
     }
 }

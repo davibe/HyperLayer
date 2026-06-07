@@ -79,6 +79,21 @@ struct ContentView: View {
                 set: { appState.setPassThroughUnmappedKeys($0) }
             ))
 
+            Toggle("Open HyperLayer at Login", isOn: Binding(
+                get: { appState.opensAtLogin },
+                set: { appState.setOpenAtLogin($0) }
+            ))
+
+            if let openAtLoginError = appState.openAtLoginError {
+                Text(openAtLoginError)
+                    .font(.callout)
+                    .foregroundStyle(.red)
+            } else if appState.openAtLoginStatus != "Enabled" && appState.openAtLoginStatus != "Disabled" {
+                Text(appState.openAtLoginStatus)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+
             HStack {
                 RuntimePill(title: "Caps Lock remap", isOn: appState.remapper.isInstalled)
                 RuntimePill(title: "Event tap", isOn: appState.engine.isRunning)
