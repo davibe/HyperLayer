@@ -1,4 +1,7 @@
 build/
+build-ci-test/
+dist/
+dist-test/
 *.xcuserdata/
 xcuserdata/
 *.xcuserstate

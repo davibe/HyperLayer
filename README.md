@@ -26,6 +26,11 @@ xcodegen generate
 xcodebuild -project HyperLayer.xcodeproj -scheme HyperLayer -configuration Debug -derivedDataPath build build
 ```
 
+## Downloads
+
+- Latest build: download the `HyperLayer-latest` artifact from the latest successful `Build HyperLayer` workflow run.
+- Releases: each `v*` release includes a zipped app and a SHA-256 checksum.
+
 ## Run
 
 ```sh
