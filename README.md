@@ -41,7 +41,7 @@ open build/Build/Products/Debug/HyperLayer.app
 
 HyperLayer needs Accessibility and Input Monitoring.
 
-The app requests what it can and opens the relevant System Settings panes when macOS requires manual approval. It rechecks permissions automatically every 10 seconds.
+The app requests Accessibility and opens the relevant System Settings panes when macOS requires manual approval. Input Monitoring is granted manually in System Settings. HyperLayer rechecks permissions automatically every 10 seconds.
 
 ## How It Works
 

@@ -70,7 +70,6 @@ final class AppState: ObservableObject {
 
         refreshOpenAtLoginStatus()
         permissions.requestAccessibility()
-        permissions.requestInputMonitoring()
         permissions.startPolling(every: 10.0) { [weak self] in
             self?.reconcileRuntime(refreshPermissions: false)
         }

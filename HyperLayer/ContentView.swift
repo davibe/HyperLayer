@@ -54,10 +54,6 @@ struct ContentView: View {
                         }
                     }
                     if !appState.permissions.inputMonitoringGranted {
-                        Button("Request Input Monitoring") {
-                            appState.permissions.requestInputMonitoring()
-                            appState.reconcileRuntime()
-                        }
                         Button("Input Monitoring Settings") {
                             appState.permissions.openInputMonitoringSettings()
                         }

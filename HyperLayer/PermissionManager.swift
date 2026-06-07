@@ -41,11 +41,6 @@ final class PermissionManager: ObservableObject {
         refresh()
     }
 
-    func requestInputMonitoring() {
-        _ = CGRequestListenEventAccess()
-        refresh()
-    }
-
     func openAccessibilitySettings() {
         openSettingsPane("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
     }
