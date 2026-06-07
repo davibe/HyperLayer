@@ -89,12 +89,6 @@ struct ContentView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
-
-            HStack {
-                RuntimePill(title: "Caps Lock remap", isOn: appState.remapper.isInstalled)
-                RuntimePill(title: "Event tap", isOn: appState.engine.isRunning)
-                Spacer()
-            }
         }
         .padding(16)
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 8))
@@ -169,24 +163,6 @@ private struct PermissionRow: View {
             Text(isGranted ? "Granted" : "Needed")
                 .foregroundStyle(.secondary)
         }
-    }
-}
-
-private struct RuntimePill: View {
-    let title: String
-    let isOn: Bool
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(isOn ? Color.green : Color.gray)
-                .frame(width: 8, height: 8)
-            Text(title)
-                .font(.callout)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(.quaternary, in: Capsule())
     }
 }
 
