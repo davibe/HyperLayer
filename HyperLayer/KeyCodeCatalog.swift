@@ -1,3 +1,4 @@
+import Carbon.HIToolbox
 import Foundation
 
 struct KeyInfo: Identifiable, Hashable {
@@ -115,12 +116,129 @@ enum KeyCodeCatalog {
     ]
 
     private static let namesByKeyCode = Dictionary(uniqueKeysWithValues: keys.map { ($0.keyCode, $0.name) })
+    private static let fixedNamesByKeyCode: [UInt16: String] = [
+        36: "Return",
+        48: "Tab",
+        49: "Space",
+        51: "Delete",
+        53: "Escape",
+        64: "F17",
+        67: "Keypad *",
+        69: "Keypad +",
+        71: "Clear",
+        75: "Keypad /",
+        76: "Keypad Enter",
+        78: "Keypad -",
+        79: "F18",
+        80: "F19",
+        81: "Keypad =",
+        82: "Keypad 0",
+        83: "Keypad 1",
+        84: "Keypad 2",
+        85: "Keypad 3",
+        86: "Keypad 4",
+        87: "Keypad 5",
+        88: "Keypad 6",
+        89: "Keypad 7",
+        90: "F20",
+        91: "Keypad 8",
+        92: "Keypad 9",
+        96: "F5",
+        97: "F6",
+        98: "F7",
+        99: "F3",
+        100: "F8",
+        101: "F9",
+        103: "F11",
+        105: "F13",
+        106: "F16",
+        107: "F14",
+        109: "F10",
+        111: "F12",
+        113: "F15",
+        114: "Help",
+        115: "Home",
+        116: "Page Up",
+        117: "Forward Delete",
+        118: "F4",
+        119: "End",
+        120: "F2",
+        121: "Page Down",
+        122: "F1",
+        123: "Left Arrow",
+        124: "Right Arrow",
+        125: "Down Arrow",
+        126: "Up Arrow"
+    ]
 
     static func name(for keyCode: UInt16) -> String {
-        namesByKeyCode[keyCode] ?? "Key \(keyCode)"
+        if let fixedName = fixedNamesByKeyCode[keyCode] {
+            return fixedName
+        }
+
+        if let layoutName = currentKeyboardLayoutName(for: keyCode) {
+            return layoutName
+        }
+
+        return namesByKeyCode[keyCode] ?? "Key \(keyCode)"
     }
 
     static func sortedKeys() -> [KeyInfo] {
         keys
+    }
+
+    private static func currentKeyboardLayoutName(for keyCode: UInt16) -> String? {
+        guard
+            let inputSource = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
+            let layoutDataPointer = TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData)
+        else {
+            return nil
+        }
+
+        let layoutData = unsafeBitCast(layoutDataPointer, to: CFData.self)
+        guard let layoutBytes = CFDataGetBytePtr(layoutData) else {
+            return nil
+        }
+
+        return layoutBytes.withMemoryRebound(to: UCKeyboardLayout.self, capacity: 1) { keyboardLayout in
+            let keyboardType = UInt32(LMGetKbdType())
+            var deadKeyState: UInt32 = 0
+            var actualLength = 0
+            var chars = [UniChar](repeating: 0, count: 4)
+
+            let status = UCKeyTranslate(
+                keyboardLayout,
+                keyCode,
+                UInt16(kUCKeyActionDisplay),
+                0,
+                keyboardType,
+                UInt32(kUCKeyTranslateNoDeadKeysMask),
+                &deadKeyState,
+                chars.count,
+                &actualLength,
+                &chars
+            )
+
+            guard status == noErr, actualLength > 0 else {
+                return nil
+            }
+
+            let translated = String(utf16CodeUnits: chars, count: actualLength)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !translated.isEmpty else {
+                return nil
+            }
+
+            return displayName(forTranslatedKey: translated)
+        }
+    }
+
+    private static func displayName(forTranslatedKey translated: String) -> String {
+        if translated.range(of: #"^[a-z]$"#, options: .regularExpression) != nil {
+            return translated.uppercased()
+        }
+
+        return translated
     }
 }
