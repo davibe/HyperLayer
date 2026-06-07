@@ -13,6 +13,7 @@
 		4C955998BAAE9AD64C0BB67B /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A83253C4EA5B4BA0121200B2 /* PermissionManager.swift */; };
 		52030B5F064499B55EA981EA /* KeyCodeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5308D29CE69349881F95502 /* KeyCodeCatalog.swift */; };
 		53D4BC6FBDBFD431AA47768A /* KeyboardEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22EFA5F0991E24FD97DAFB3 /* KeyboardEngine.swift */; };
+		5D418D8DD05B776F3AEAA173 /* HyperLayerIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = C32DA8E7E471C92860E298BF /* HyperLayerIcon.icns */; };
 		5E46EC48B416882DAF7A71DF /* CapsLockRemapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757095862AE14697FD017541 /* CapsLockRemapper.swift */; };
 		9C4B9618EE8DD3713BD5D03A /* HyperLayerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6AE6E161BB0775BC781C0A /* HyperLayerApp.swift */; };
 		A01526C702ABAABEFB0D88ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 046C43735BF8A9BB43131E37 /* Assets.xcassets */; };
@@ -28,6 +29,7 @@
 		AB90BBCB3D6A46EB0103EB02 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
 		B5308D29CE69349881F95502 /* KeyCodeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodeCatalog.swift; sourceTree = "<group>"; };
 		C220A617269C4BEF3B5C6AE3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		C32DA8E7E471C92860E298BF /* HyperLayerIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = HyperLayerIcon.icns; sourceTree = "<group>"; };
 		CEE934BC66BE7A811852CDF2 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		DD161718CB9F83C80A172EB0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		E22EFA5F0991E24FD97DAFB3 /* KeyboardEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardEngine.swift; sourceTree = "<group>"; };
@@ -44,6 +46,7 @@
 				AB90BBCB3D6A46EB0103EB02 /* ConfigStore.swift */,
 				DD161718CB9F83C80A172EB0 /* ContentView.swift */,
 				0F6AE6E161BB0775BC781C0A /* HyperLayerApp.swift */,
+				C32DA8E7E471C92860E298BF /* HyperLayerIcon.icns */,
 				C220A617269C4BEF3B5C6AE3 /* Info.plist */,
 				E22EFA5F0991E24FD97DAFB3 /* KeyboardEngine.swift */,
 				B5308D29CE69349881F95502 /* KeyCodeCatalog.swift */,
@@ -129,6 +132,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A01526C702ABAABEFB0D88ED /* Assets.xcassets in Resources */,
+				5D418D8DD05B776F3AEAA173 /* HyperLayerIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,7 +280,7 @@
 		C26F09377AC157D1774C5536 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -294,7 +298,7 @@
 		DFEAA567BCDF4A9F3A9D2031 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
