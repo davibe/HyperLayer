@@ -38,7 +38,10 @@ BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP_PATH/Contents/
 ZIP_PATH="$DIST_DIR/$ZIP_BASENAME.zip"
 
 ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
-shasum -a 256 "$ZIP_PATH" > "$ZIP_PATH.sha256"
+(
+  cd "$DIST_DIR"
+  shasum -a 256 "$ZIP_BASENAME.zip" > "$ZIP_BASENAME.zip.sha256"
+)
 
 echo "Packaged $APP_NAME $VERSION ($BUILD)"
 echo "ZIP_PATH=$ZIP_PATH"
