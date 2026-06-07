@@ -6,6 +6,10 @@ Caps Lock as a programmable keyboard layer for macOS.
 
 HyperLayer suppresses the normal Caps Lock behavior and lets you map `Caps Lock + key` to any keyboard shortcut, including modifier combinations such as `Ctrl+Tab`, `Cmd+Shift+P`, or `Opt+Left Arrow`.
 
+## Why
+
+I created HyperLayer because I was unsatisfied with the complexity of setting up Karabiner and Kanata, and I did not want to use a commercial product that felt like overkill for my needs.
+
 ## Features
 
 - Caps Lock layer key.
