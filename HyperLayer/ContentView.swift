@@ -28,6 +28,8 @@ struct ContentView: View {
                 set: { appState.setEnabled($0) }
             ))
             .toggleStyle(.switch)
+            .focusable(false)
+            .help("Enable or disable HyperLayer")
         }
     }
 
