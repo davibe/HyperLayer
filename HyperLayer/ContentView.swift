@@ -17,8 +17,15 @@ struct ContentView: View {
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("HyperLayer")
-                    .font(.largeTitle.weight(.semibold))
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text("HyperLayer")
+                        .font(.largeTitle.weight(.semibold))
+                    if let appVersionText {
+                        Text(appVersionText)
+                            .font(.callout.weight(.medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Text(appState.runtimeStatus)
                     .foregroundStyle(statusColor)
             }
@@ -149,6 +156,17 @@ struct ContentView: View {
 
     private var statusColor: Color {
         appState.runtimeStatus == "Running" ? .green : .secondary
+    }
+
+    private var appVersionText: String? {
+        guard
+            let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+            !version.isEmpty
+        else {
+            return nil
+        }
+
+        return "v\(version)"
     }
 }
 
