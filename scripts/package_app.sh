@@ -9,6 +9,8 @@ CONFIGURATION="${CONFIGURATION:-Release}"
 DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-build}"
 DIST_DIR="${DIST_DIR:-dist}"
 ZIP_BASENAME="${ZIP_BASENAME:-HyperLayer}"
+APP_VERSION="${APP_VERSION:-}"
+APP_BUILD="${APP_BUILD:-}"
 
 if ! command -v xcodegen >/dev/null 2>&1; then
   echo "xcodegen is required. Install it with: brew install xcodegen" >&2
@@ -18,6 +20,27 @@ fi
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"
 
+if [[ -z "$APP_VERSION" ]]; then
+  if [[ "${GITHUB_REF:-}" == refs/tags/v* ]]; then
+    APP_VERSION="${GITHUB_REF_NAME:-${GITHUB_REF#refs/tags/}}"
+    APP_VERSION="${APP_VERSION#v}"
+  elif [[ "${GITHUB_REF_TYPE:-}" == "tag" && "${GITHUB_REF_NAME:-}" == v* ]]; then
+    APP_VERSION="${GITHUB_REF_NAME#v}"
+  fi
+fi
+
+if [[ -z "$APP_BUILD" && "$APP_VERSION" =~ ^[0-9]+[.][0-9]+[.]([0-9]+)$ ]]; then
+  APP_BUILD="${BASH_REMATCH[1]}"
+fi
+
+XCODE_BUILD_SETTINGS=()
+if [[ -n "$APP_VERSION" ]]; then
+  XCODE_BUILD_SETTINGS+=("MARKETING_VERSION=$APP_VERSION")
+fi
+if [[ -n "$APP_BUILD" ]]; then
+  XCODE_BUILD_SETTINGS+=("CURRENT_PROJECT_VERSION=$APP_BUILD")
+fi
+
 xcodegen generate
 
 xcodebuild \
@@ -25,6 +48,7 @@ xcodebuild \
   -scheme "$SCHEME_NAME" \
   -configuration "$CONFIGURATION" \
   -derivedDataPath "$DERIVED_DATA_PATH" \
+  "${XCODE_BUILD_SETTINGS[@]}" \
   build
 
 APP_PATH="$DERIVED_DATA_PATH/Build/Products/$CONFIGURATION/$APP_NAME.app"
