@@ -43,13 +43,22 @@ fi
 
 xcodegen generate
 
-xcodebuild \
-  -project "$PROJECT_NAME" \
-  -scheme "$SCHEME_NAME" \
-  -configuration "$CONFIGURATION" \
-  -derivedDataPath "$DERIVED_DATA_PATH" \
-  "${XCODE_BUILD_SETTINGS[@]}" \
-  build
+if [[ ${#XCODE_BUILD_SETTINGS[@]} -gt 0 ]]; then
+  xcodebuild \
+    -project "$PROJECT_NAME" \
+    -scheme "$SCHEME_NAME" \
+    -configuration "$CONFIGURATION" \
+    -derivedDataPath "$DERIVED_DATA_PATH" \
+    "${XCODE_BUILD_SETTINGS[@]}" \
+    build
+else
+  xcodebuild \
+    -project "$PROJECT_NAME" \
+    -scheme "$SCHEME_NAME" \
+    -configuration "$CONFIGURATION" \
+    -derivedDataPath "$DERIVED_DATA_PATH" \
+    build
+fi
 
 APP_PATH="$DERIVED_DATA_PATH/Build/Products/$CONFIGURATION/$APP_NAME.app"
 if [[ ! -d "$APP_PATH" ]]; then
