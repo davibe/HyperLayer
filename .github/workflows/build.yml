@@ -27,6 +27,20 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      - name: Import signing certificate
+        env:
+          CODESIGN_CERTIFICATE_BASE64: ${{ secrets.HYPERLAYER_CODESIGN_CERTIFICATE_BASE64 }}
+          CODESIGN_CERTIFICATE_PASSWORD: ${{ secrets.HYPERLAYER_CODESIGN_CERTIFICATE_PASSWORD }}
+        run: |
+          if [[ -z "$CODESIGN_CERTIFICATE_BASE64" || -z "$CODESIGN_CERTIFICATE_PASSWORD" ]]; then
+            echo "No signing certificate configured; using ad-hoc signing."
+            echo "HYPERLAYER_CODE_SIGN_IDENTITY=-" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          scripts/import_codesign_certificate.sh
+          echo "HYPERLAYER_CODE_SIGN_IDENTITY=HyperLayer Self-Signed Code Signing" >> "$GITHUB_ENV"
+
       - name: Select package name
         id: package
         shell: bash
@@ -52,6 +66,7 @@ jobs:
           DERIVED_DATA_PATH: build
           DIST_DIR: dist
           ZIP_BASENAME: ${{ steps.package.outputs.zip_basename }}
+          CODE_SIGN_IDENTITY: ${{ env.HYPERLAYER_CODE_SIGN_IDENTITY }}
         run: scripts/package_app.sh
 
       - name: Upload build artifact

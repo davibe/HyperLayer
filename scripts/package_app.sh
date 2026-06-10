@@ -11,6 +11,7 @@ DIST_DIR="${DIST_DIR:-dist}"
 ZIP_BASENAME="${ZIP_BASENAME:-HyperLayer}"
 APP_VERSION="${APP_VERSION:-}"
 APP_BUILD="${APP_BUILD:-}"
+CODE_SIGN_IDENTITY_OVERRIDE="${CODE_SIGN_IDENTITY:-}"
 
 if ! command -v xcodegen >/dev/null 2>&1; then
   echo "xcodegen is required. Install it with: brew install xcodegen" >&2
@@ -39,6 +40,9 @@ if [[ -n "$APP_VERSION" ]]; then
 fi
 if [[ -n "$APP_BUILD" ]]; then
   XCODE_BUILD_SETTINGS+=("CURRENT_PROJECT_VERSION=$APP_BUILD")
+fi
+if [[ -n "$CODE_SIGN_IDENTITY_OVERRIDE" ]]; then
+  XCODE_BUILD_SETTINGS+=("CODE_SIGN_IDENTITY=$CODE_SIGN_IDENTITY_OVERRIDE")
 fi
 
 xcodegen generate
