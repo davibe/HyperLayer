@@ -70,6 +70,36 @@ struct Shortcut: Codable, Hashable, Equatable {
     static func from(event: NSEvent) -> Shortcut {
         Shortcut(keyCode: event.keyCode, modifiers: CGEventFlags.from(event.modifierFlags))
     }
+
+    static func output(from event: NSEvent) -> Shortcut {
+        output(keyCode: event.keyCode, modifiers: CGEventFlags.from(event.modifierFlags))
+    }
+
+    static func output(keyCode: UInt16, modifiers: CGEventFlags) -> Shortcut {
+        Shortcut(
+            keyCode: normalizedOutputKeyCode(keyCode, modifiers: modifiers),
+            modifiers: modifiers
+        )
+    }
+
+    private static func normalizedOutputKeyCode(_ keyCode: UInt16, modifiers: CGEventFlags) -> UInt16 {
+        guard modifiers.contains(.maskSecondaryFn) else {
+            return keyCode
+        }
+
+        switch keyCode {
+        case KeyCodeCatalog.homeKeyCode:
+            return KeyCodeCatalog.leftArrowKeyCode
+        case KeyCodeCatalog.endKeyCode:
+            return KeyCodeCatalog.rightArrowKeyCode
+        case KeyCodeCatalog.pageUpKeyCode:
+            return KeyCodeCatalog.upArrowKeyCode
+        case KeyCodeCatalog.pageDownKeyCode:
+            return KeyCodeCatalog.downArrowKeyCode
+        default:
+            return keyCode
+        }
+    }
 }
 
 extension CGEventFlags {

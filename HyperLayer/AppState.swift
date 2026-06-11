@@ -256,7 +256,7 @@ final class AppState: ObservableObject {
         case .trigger(let id):
             updateMapping(id: id, triggerKeyCode: event.keyCode)
         case .output(let id):
-            updateMapping(id: id, output: Shortcut.from(event: event))
+            updateMapping(id: id, output: Shortcut.output(from: event))
         }
 
         self.recordingTarget = nil
@@ -278,7 +278,7 @@ final class AppState: ObservableObject {
         case .output(let id):
             updateMapping(
                 id: id,
-                output: Shortcut(keyCode: recordedKeyStroke.keyCode, modifiers: recordedKeyStroke.modifiers)
+                output: Shortcut.output(keyCode: recordedKeyStroke.keyCode, modifiers: recordedKeyStroke.modifiers)
             )
         }
 

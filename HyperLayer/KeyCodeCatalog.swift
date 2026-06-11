@@ -12,6 +12,14 @@ enum KeyCodeCatalog {
     static let defaultOutputKey: UInt16 = 123
     static let capsLockKeyCode: UInt16 = 57
     static let layerKeyCode: UInt16 = 79
+    static let homeKeyCode: UInt16 = 115
+    static let pageUpKeyCode: UInt16 = 116
+    static let endKeyCode: UInt16 = 119
+    static let pageDownKeyCode: UInt16 = 121
+    static let leftArrowKeyCode: UInt16 = 123
+    static let rightArrowKeyCode: UInt16 = 124
+    static let downArrowKeyCode: UInt16 = 125
+    static let upArrowKeyCode: UInt16 = 126
 
     static let keys: [KeyInfo] = [
         KeyInfo(keyCode: 0, name: "A"),
