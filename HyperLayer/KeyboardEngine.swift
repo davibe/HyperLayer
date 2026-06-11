@@ -1,8 +1,14 @@
 import AppKit
+import Carbon.HIToolbox
 import CoreGraphics
 import Foundation
 
 private let syntheticEventMarker: Int64 = 0x48594C52
+
+private struct SyntheticModifierKey {
+    let flag: CGEventFlags
+    let keyCode: CGKeyCode
+}
 
 private let keyboardTapCallback: CGEventTapCallBack = { proxy, type, event, refcon in
     guard let refcon else {
@@ -23,6 +29,13 @@ final class KeyboardEngine: ObservableObject {
     private var layerIsDown = false
     private var layerFlagsChangedIsDown = false
     private var suppressedLayerKeys = Set<UInt16>()
+    private let syntheticModifierKeys = [
+        SyntheticModifierKey(flag: .maskControl, keyCode: CGKeyCode(kVK_Control)),
+        SyntheticModifierKey(flag: .maskAlternate, keyCode: CGKeyCode(kVK_Option)),
+        SyntheticModifierKey(flag: .maskShift, keyCode: CGKeyCode(kVK_Shift)),
+        SyntheticModifierKey(flag: .maskCommand, keyCode: CGKeyCode(kVK_Command)),
+        SyntheticModifierKey(flag: .maskSecondaryFn, keyCode: CGKeyCode(kVK_Function))
+    ]
 
     deinit {
         stop()
@@ -189,16 +202,51 @@ final class KeyboardEngine: ObservableObject {
             return
         }
 
-        let keyCode = CGKeyCode(shortcut.keyCode)
+        if shortcut.modifiers.contains(.maskSecondaryFn) {
+            postWithModifierTransitions(shortcut, source: source)
+            return
+        }
+
+        postKeyStroke(keyCode: CGKeyCode(shortcut.keyCode), flags: shortcut.modifiers, source: source)
+    }
+
+    private func postWithModifierTransitions(_ shortcut: Shortcut, source: CGEventSource) {
+        let modifierKeys = syntheticModifierKeys.filter { shortcut.modifiers.contains($0.flag) }
+        var activeFlags: CGEventFlags = []
+
+        for modifierKey in modifierKeys {
+            activeFlags.insert(modifierKey.flag)
+            postModifier(keyCode: modifierKey.keyCode, keyDown: true, flags: activeFlags, source: source)
+        }
+
+        postKeyStroke(keyCode: CGKeyCode(shortcut.keyCode), flags: shortcut.modifiers, source: source)
+
+        for modifierKey in modifierKeys.reversed() {
+            activeFlags.remove(modifierKey.flag)
+            postModifier(keyCode: modifierKey.keyCode, keyDown: false, flags: activeFlags, source: source)
+        }
+    }
+
+    private func postKeyStroke(keyCode: CGKeyCode, flags: CGEventFlags, source: CGEventSource) {
         let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true)
         let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false)
 
         [keyDown, keyUp].forEach { event in
-            event?.flags = shortcut.modifiers
-            event?.setIntegerValueField(.eventSourceUserData, value: syntheticEventMarker)
+            mark(event, flags: flags)
         }
 
         keyDown?.post(tap: .cghidEventTap)
         keyUp?.post(tap: .cghidEventTap)
+    }
+
+    private func postModifier(keyCode: CGKeyCode, keyDown: Bool, flags: CGEventFlags, source: CGEventSource) {
+        let event = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: keyDown)
+        mark(event, flags: flags)
+        event?.post(tap: .cghidEventTap)
+    }
+
+    private func mark(_ event: CGEvent?, flags: CGEventFlags) {
+        event?.flags = flags
+        event?.setIntegerValueField(.eventSourceUserData, value: syntheticEventMarker)
     }
 }
