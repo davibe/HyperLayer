@@ -29,7 +29,6 @@ final class KeyboardEngine: ObservableObject {
     private var layerIsDown = false
     private var layerFlagsChangedIsDown = false
     private var suppressedLayerKeys = Set<UInt16>()
-    private let nativeShortcutPerformer = NativeShortcutPerformer()
     private let syntheticModifierKeys = [
         SyntheticModifierKey(flag: .maskControl, keyCode: CGKeyCode(kVK_Control)),
         SyntheticModifierKey(flag: .maskAlternate, keyCode: CGKeyCode(kVK_Option)),
@@ -200,10 +199,6 @@ final class KeyboardEngine: ObservableObject {
 
     private func post(_ shortcut: Shortcut) {
         guard let source = CGEventSource(stateID: .hidSystemState) else {
-            return
-        }
-
-        if nativeShortcutPerformer.perform(shortcut: shortcut) {
             return
         }
 
