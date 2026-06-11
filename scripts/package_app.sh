@@ -30,8 +30,10 @@ if [[ -z "$APP_VERSION" ]]; then
   fi
 fi
 
-if [[ -z "$APP_BUILD" && "$APP_VERSION" =~ ^[0-9]+[.][0-9]+[.]([0-9]+)$ ]]; then
-  APP_BUILD="${BASH_REMATCH[1]}"
+if [[ -z "$APP_BUILD" ]] && command -v git >/dev/null 2>&1; then
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    APP_BUILD="$(git rev-list --count HEAD)"
+  fi
 fi
 
 XCODE_BUILD_SETTINGS=()
@@ -40,6 +42,7 @@ if [[ -n "$APP_VERSION" ]]; then
 fi
 if [[ -n "$APP_BUILD" ]]; then
   XCODE_BUILD_SETTINGS+=("CURRENT_PROJECT_VERSION=$APP_BUILD")
+  XCODE_BUILD_SETTINGS+=("HYPERLAYER_BUILD_NUMBER=$APP_BUILD")
 fi
 if [[ -n "$CODE_SIGN_IDENTITY_OVERRIDE" ]]; then
   XCODE_BUILD_SETTINGS+=("CODE_SIGN_IDENTITY=$CODE_SIGN_IDENTITY_OVERRIDE")

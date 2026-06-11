@@ -84,6 +84,7 @@
 			buildPhases = (
 				27CE755E7D13E8E8A1A9BC68 /* Sources */,
 				B36B30857B743AE9EFB813B5 /* Resources */,
+				7713DB16843E19D45D36F967 /* Stamp build number */,
 			);
 			buildRules = (
 			);
@@ -140,6 +141,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		7713DB16843E19D45D36F967 /* Stamp build number */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Stamp build number";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "bash \"$SRCROOT/scripts/stamp_build_number.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		27CE755E7D13E8E8A1A9BC68 /* Sources */ = {
@@ -288,7 +311,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 0;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = HyperLayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -308,7 +331,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 0;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = HyperLayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
