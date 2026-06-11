@@ -13,6 +13,20 @@ APP_VERSION="${APP_VERSION:-}"
 APP_BUILD="${APP_BUILD:-}"
 CODE_SIGN_IDENTITY_OVERRIDE="${CODE_SIGN_IDENTITY:-}"
 
+derive_git_build_number() {
+  if ! command -v git >/dev/null 2>&1 || ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Cannot derive build number outside a git checkout. Set APP_BUILD explicitly." >&2
+    exit 1
+  fi
+
+  if [[ "$(git rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
+    echo "Cannot derive build number from a shallow git checkout. Fetch full history or set APP_BUILD explicitly." >&2
+    exit 1
+  fi
+
+  git rev-list --count HEAD
+}
+
 if ! command -v xcodegen >/dev/null 2>&1; then
   echo "xcodegen is required. Install it with: brew install xcodegen" >&2
   exit 1
@@ -30,10 +44,8 @@ if [[ -z "$APP_VERSION" ]]; then
   fi
 fi
 
-if [[ -z "$APP_BUILD" ]] && command -v git >/dev/null 2>&1; then
-  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    APP_BUILD="$(git rev-list --count HEAD)"
-  fi
+if [[ -z "$APP_BUILD" ]]; then
+  APP_BUILD="$(derive_git_build_number)"
 fi
 
 XCODE_BUILD_SETTINGS=()

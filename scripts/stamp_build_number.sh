@@ -12,6 +12,11 @@ repo_root="${SRCROOT:-}"
 
 if [[ -z "$build_number" && -n "$repo_root" ]] && command -v git >/dev/null 2>&1; then
   if git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    if [[ "$(git -C "$repo_root" rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
+      echo "Cannot derive build number from a shallow git checkout. Fetch full history or set HYPERLAYER_BUILD_NUMBER." >&2
+      exit 1
+    fi
+
     build_number="$(git -C "$repo_root" rev-list --count HEAD)"
   fi
 fi
