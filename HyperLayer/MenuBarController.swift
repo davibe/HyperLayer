@@ -29,8 +29,7 @@ final class MenuBarController: NSObject {
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = item.button {
-            button.image = NSImage(systemSymbolName: "keyboard", accessibilityDescription: "HyperLayer")
-            button.image?.isTemplate = true
+            button.image = MenuBarIcon.image()
             button.toolTip = "HyperLayer"
         }
         statusItem = item
