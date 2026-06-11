@@ -17,6 +17,7 @@ I created HyperLayer because I was unsatisfied with the complexity of setting up
 - Recorder buttons for trigger keys and output shortcuts.
 - Automatic permission checks.
 - Saved configuration.
+- Optional menu bar icon and Dock icon hiding.
 - Restores the original Caps Lock mapping when disabled or quit.
 
 ## Build

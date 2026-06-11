@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0D53C8AFC43D5E49588C860B /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB90BBCB3D6A46EB0103EB02 /* ConfigStore.swift */; };
+		113B775947566972A1A0E1F0 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D4B18971805099E20086EC /* MenuBarController.swift */; };
 		339429E140A55C3F5A9D35F5 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD161718CB9F83C80A172EB0 /* ContentView.swift */; };
 		3D88CBA568E43510D0D1FA80 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE934BC66BE7A811852CDF2 /* Models.swift */; };
 		486230CC3B90D46A27330210 /* RecordingEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA3AF1DB08645D87407F06D /* RecordingEventTap.swift */; };
@@ -16,6 +17,7 @@
 		53D4BC6FBDBFD431AA47768A /* KeyboardEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22EFA5F0991E24FD97DAFB3 /* KeyboardEngine.swift */; };
 		5D418D8DD05B776F3AEAA173 /* HyperLayerIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = C32DA8E7E471C92860E298BF /* HyperLayerIcon.icns */; };
 		5E46EC48B416882DAF7A71DF /* CapsLockRemapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757095862AE14697FD017541 /* CapsLockRemapper.swift */; };
+		679763EEAD28EC396120CDC8 /* WindowAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5ACAA7EAC8D944FA393FBEA /* WindowAccessor.swift */; };
 		9C4B9618EE8DD3713BD5D03A /* HyperLayerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6AE6E161BB0775BC781C0A /* HyperLayerApp.swift */; };
 		A01526C702ABAABEFB0D88ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 046C43735BF8A9BB43131E37 /* Assets.xcassets */; };
 		B6227084F5DDE9393B04C334 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECB87F6B5F752BC5FA46A832 /* AppState.swift */; };
@@ -27,9 +29,11 @@
 		31AD8A1EE034EFC00FC2B12F /* HyperLayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HyperLayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6EA3AF1DB08645D87407F06D /* RecordingEventTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEventTap.swift; sourceTree = "<group>"; };
 		757095862AE14697FD017541 /* CapsLockRemapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapsLockRemapper.swift; sourceTree = "<group>"; };
+		77D4B18971805099E20086EC /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		A83253C4EA5B4BA0121200B2 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
 		AB90BBCB3D6A46EB0103EB02 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
 		B5308D29CE69349881F95502 /* KeyCodeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodeCatalog.swift; sourceTree = "<group>"; };
+		B5ACAA7EAC8D944FA393FBEA /* WindowAccessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowAccessor.swift; sourceTree = "<group>"; };
 		C220A617269C4BEF3B5C6AE3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C32DA8E7E471C92860E298BF /* HyperLayerIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = HyperLayerIcon.icns; sourceTree = "<group>"; };
 		CEE934BC66BE7A811852CDF2 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
@@ -52,9 +56,11 @@
 				C220A617269C4BEF3B5C6AE3 /* Info.plist */,
 				E22EFA5F0991E24FD97DAFB3 /* KeyboardEngine.swift */,
 				B5308D29CE69349881F95502 /* KeyCodeCatalog.swift */,
+				77D4B18971805099E20086EC /* MenuBarController.swift */,
 				CEE934BC66BE7A811852CDF2 /* Models.swift */,
 				A83253C4EA5B4BA0121200B2 /* PermissionManager.swift */,
 				6EA3AF1DB08645D87407F06D /* RecordingEventTap.swift */,
+				B5ACAA7EAC8D944FA393FBEA /* WindowAccessor.swift */,
 			);
 			path = HyperLayer;
 			sourceTree = "<group>";
@@ -176,9 +182,11 @@
 				9C4B9618EE8DD3713BD5D03A /* HyperLayerApp.swift in Sources */,
 				52030B5F064499B55EA981EA /* KeyCodeCatalog.swift in Sources */,
 				53D4BC6FBDBFD431AA47768A /* KeyboardEngine.swift in Sources */,
+				113B775947566972A1A0E1F0 /* MenuBarController.swift in Sources */,
 				3D88CBA568E43510D0D1FA80 /* Models.swift in Sources */,
 				4C955998BAAE9AD64C0BB67B /* PermissionManager.swift in Sources */,
 				486230CC3B90D46A27330210 /* RecordingEventTap.swift in Sources */,
+				679763EEAD28EC396120CDC8 /* WindowAccessor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

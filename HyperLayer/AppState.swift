@@ -28,13 +28,16 @@ final class AppState: ObservableObject {
     let remapper = CapsLockRemapper()
 
     private let store = ConfigStore()
+    private let menuBarController = MenuBarController()
     private let recordingEventTap = RecordingEventTap()
     private var localMonitor: Any?
+    private weak var mainWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
 
     init() {
         config = store.load()
         engine.update(config: config)
+        configureMenuBarController()
 
         permissions.$accessibilityGranted
             .merge(with: permissions.$inputMonitoringGranted)
@@ -69,6 +72,7 @@ final class AppState: ObservableObject {
         )
 
         refreshOpenAtLoginStatus()
+        applyPresentationOptions()
         permissions.startPolling(every: 10.0) { [weak self] in
             self?.reconcileRuntime(refreshPermissions: false)
         }
@@ -89,6 +93,24 @@ final class AppState: ObservableObject {
 
     func setPassThroughUnmappedKeys(_ isEnabled: Bool) {
         config.passThroughUnmappedKeys = isEnabled
+    }
+
+    func setShowsMenuBarIcon(_ isVisible: Bool) {
+        var nextConfig = config
+        nextConfig.showsMenuBarIcon = isVisible
+        if !nextConfig.showsMenuBarIcon && !nextConfig.showsDockIcon {
+            nextConfig.showsDockIcon = true
+        }
+        config = nextConfig
+    }
+
+    func setShowsDockIcon(_ isVisible: Bool) {
+        var nextConfig = config
+        nextConfig.showsDockIcon = isVisible
+        if !nextConfig.showsDockIcon {
+            nextConfig.showsMenuBarIcon = true
+        }
+        config = nextConfig
     }
 
     func setOpenAtLogin(_ shouldOpenAtLogin: Bool) {
@@ -224,6 +246,22 @@ final class AppState: ObservableObject {
         updateRuntimeStatus()
     }
 
+    func showMainWindow() {
+        NSApp.activate(ignoringOtherApps: true)
+
+        if let window = mainWindow ?? NSApp.windows.first(where: { !$0.isMiniaturized }) ?? NSApp.windows.first {
+            if window.isMiniaturized {
+                window.deminiaturize(nil)
+            }
+            window.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    func registerMainWindow(_ window: NSWindow) {
+        mainWindow = window
+        window.isReleasedWhenClosed = false
+    }
+
     private func installLocalMonitorIfNeeded() {
         guard localMonitor == nil else {
             return
@@ -300,6 +338,37 @@ final class AppState: ObservableObject {
             runtimeStatus = "Running"
         } else {
             runtimeStatus = engine.lastError ?? "Stopped"
+        }
+        applyPresentationOptions()
+    }
+
+    private func configureMenuBarController() {
+        menuBarController.onShow = { [weak self] in
+            self?.showMainWindow()
+        }
+        menuBarController.onToggleEnabled = { [weak self] in
+            guard let self else {
+                return
+            }
+            setEnabled(!config.isEnabled)
+        }
+        menuBarController.onQuit = {
+            NSApp.terminate(nil)
+        }
+    }
+
+    private func applyPresentationOptions() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else {
+                return
+            }
+
+            NSApp.setActivationPolicy(config.showsDockIcon ? .regular : .accessory)
+            menuBarController.update(
+                isVisible: config.showsMenuBarIcon,
+                isEnabled: config.isEnabled,
+                runtimeStatus: runtimeStatus
+            )
         }
     }
 

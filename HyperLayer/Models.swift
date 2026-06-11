@@ -5,13 +5,52 @@ import Foundation
 struct HyperLayerConfig: Codable, Equatable {
     var isEnabled: Bool
     var passThroughUnmappedKeys: Bool
+    var showsMenuBarIcon: Bool
+    var showsDockIcon: Bool
     var mappings: [LayerMapping]
 
     static let `default` = HyperLayerConfig(
         isEnabled: true,
         passThroughUnmappedKeys: true,
+        showsMenuBarIcon: false,
+        showsDockIcon: true,
         mappings: []
     )
+
+    init(
+        isEnabled: Bool,
+        passThroughUnmappedKeys: Bool,
+        showsMenuBarIcon: Bool,
+        showsDockIcon: Bool,
+        mappings: [LayerMapping]
+    ) {
+        self.isEnabled = isEnabled
+        self.passThroughUnmappedKeys = passThroughUnmappedKeys
+        self.showsMenuBarIcon = showsMenuBarIcon
+        self.showsDockIcon = showsDockIcon
+        self.mappings = mappings
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled
+        case passThroughUnmappedKeys
+        case showsMenuBarIcon
+        case showsDockIcon
+        case mappings
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        passThroughUnmappedKeys = try container.decodeIfPresent(Bool.self, forKey: .passThroughUnmappedKeys) ?? true
+        showsMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showsMenuBarIcon) ?? false
+        showsDockIcon = try container.decodeIfPresent(Bool.self, forKey: .showsDockIcon) ?? true
+        mappings = try container.decodeIfPresent([LayerMapping].self, forKey: .mappings) ?? []
+
+        if !showsMenuBarIcon && !showsDockIcon {
+            showsMenuBarIcon = true
+        }
+    }
 }
 
 struct LayerMapping: Codable, Identifiable, Equatable {

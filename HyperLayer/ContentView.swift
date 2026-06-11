@@ -7,11 +7,14 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 20) {
             header
             permissionsPanel
-            layerPanel
+            optionsPanel
             mappingsPanel
             Spacer(minLength: 0)
         }
         .padding(EdgeInsets(top: 40, leading: 24, bottom: 24, trailing: 24))
+        .background(WindowAccessor { window in
+            appState.registerMainWindow(window)
+        })
     }
 
     private var header: some View {
@@ -74,14 +77,24 @@ struct ContentView: View {
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 8))
     }
 
-    private var layerPanel: some View {
+    private var optionsPanel: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Layer Behavior")
+            Text("Options")
                 .font(.headline)
 
             Toggle("Pass through unmapped Caps Lock combinations", isOn: Binding(
                 get: { appState.config.passThroughUnmappedKeys },
                 set: { appState.setPassThroughUnmappedKeys($0) }
+            ))
+
+            Toggle("Show menu bar icon", isOn: Binding(
+                get: { appState.config.showsMenuBarIcon },
+                set: { appState.setShowsMenuBarIcon($0) }
+            ))
+
+            Toggle("Show Dock icon", isOn: Binding(
+                get: { appState.config.showsDockIcon },
+                set: { appState.setShowsDockIcon($0) }
             ))
 
             Toggle("Open HyperLayer at Login", isOn: Binding(
