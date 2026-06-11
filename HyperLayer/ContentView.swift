@@ -166,6 +166,11 @@ struct ContentView: View {
             return nil
         }
 
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+        if let build, !build.isEmpty {
+            return "v\(version) (\(build))"
+        }
+
         return "v\(version)"
     }
 }
