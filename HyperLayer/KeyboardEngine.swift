@@ -25,7 +25,6 @@ final class KeyboardEngine: ObservableObject {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var shortcutsByTriggerKeyCode: [UInt16: Shortcut] = [:]
-    private var passThroughUnmappedKeys = true
     private var layerIsDown = false
     private var layerFlagsChangedIsDown = false
     private var suppressedLayerKeys = Set<UInt16>()
@@ -56,7 +55,6 @@ final class KeyboardEngine: ObservableObject {
         }
 
         shortcutsByTriggerKeyCode = nextShortcuts
-        passThroughUnmappedKeys = config.passThroughUnmappedKeys
     }
 
     @discardableResult
@@ -149,12 +147,7 @@ final class KeyboardEngine: ObservableObject {
                 return nil
             }
 
-            if passThroughUnmappedKeys {
-                return Unmanaged.passUnretained(event)
-            }
-
-            suppressedLayerKeys.insert(keyCode)
-            return nil
+            return Unmanaged.passUnretained(event)
 
         case .keyUp:
             if suppressedLayerKeys.contains(keyCode) {

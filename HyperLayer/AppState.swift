@@ -91,10 +91,6 @@ final class AppState: ObservableObject {
         config.isEnabled = isEnabled
     }
 
-    func setPassThroughUnmappedKeys(_ isEnabled: Bool) {
-        config.passThroughUnmappedKeys = isEnabled
-    }
-
     func setShowsMenuBarIcon(_ isVisible: Bool) {
         var nextConfig = config
         nextConfig.showsMenuBarIcon = isVisible

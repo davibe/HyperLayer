@@ -82,11 +82,6 @@ struct ContentView: View {
             Text("Options")
                 .font(.headline)
 
-            Toggle("Pass through unmapped Caps Lock combinations", isOn: Binding(
-                get: { appState.config.passThroughUnmappedKeys },
-                set: { appState.setPassThroughUnmappedKeys($0) }
-            ))
-
             Toggle("Show menu bar icon", isOn: Binding(
                 get: { appState.config.showsMenuBarIcon },
                 set: { appState.setShowsMenuBarIcon($0) }
