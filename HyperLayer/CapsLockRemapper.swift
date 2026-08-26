@@ -19,18 +19,25 @@ final class CapsLockRemapper: ObservableObject {
 
     func install() {
         do {
-            if originalMappings == nil {
-                originalMappings = try readMappings()
-            }
+            let currentMappings = try readMappings()
+            originalMappings = originalMappings ?? currentMappings
+            try rebuildLayerMapping(from: currentMappings)
+            isInstalled = true
+            lastError = nil
+        } catch {
+            isInstalled = false
+            lastError = error.localizedDescription
+        }
+    }
 
-            let baseMappings = originalMappings ?? []
-            var nextMappings = baseMappings.filter { $0.HIDKeyboardModifierMappingSrc != capsLockUsage }
-            nextMappings.append(HIDUserKeyMapping(
-                HIDKeyboardModifierMappingSrc: capsLockUsage,
-                HIDKeyboardModifierMappingDst: f18Usage
-            ))
-
-            try writeMappings(nextMappings)
+    /// Rebuild the mapping after macOS has recreated keyboard services, such as after wake.
+    func refresh() {
+        do {
+            let currentMappings = try readMappings()
+            originalMappings = originalMappings ?? currentMappings
+            // Writing the base mapping first forces IOHID to discard a stale mapping that can
+            // otherwise still be reported by hidutil after a keyboard reconnect.
+            try rebuildLayerMapping(from: currentMappings)
             isInstalled = true
             lastError = nil
         } catch {
@@ -45,7 +52,14 @@ final class CapsLockRemapper: ObservableObject {
         }
 
         do {
-            try writeMappings(originalMappings)
+            let currentMappings = try readMappings()
+            var restoredMappings = currentMappings.filter {
+                $0.HIDKeyboardModifierMappingSrc != capsLockUsage
+            }
+            restoredMappings.append(contentsOf: originalMappings.filter {
+                $0.HIDKeyboardModifierMappingSrc == capsLockUsage
+            })
+            try writeMappings(restoredMappings)
             self.originalMappings = nil
             isInstalled = false
             lastError = nil
@@ -77,6 +91,20 @@ final class CapsLockRemapper: ObservableObject {
             throw RemapperError.invalidJSON
         }
         _ = try runHIDUtil(arguments: ["property", "--set", json])
+    }
+
+    private func rebuildLayerMapping(from mappings: [HIDUserKeyMapping]) throws {
+        let baseMappings = mappings.filter {
+            $0.HIDKeyboardModifierMappingSrc != capsLockUsage
+        }
+        try writeMappings(baseMappings)
+
+        var nextMappings = baseMappings
+        nextMappings.append(HIDUserKeyMapping(
+            HIDKeyboardModifierMappingSrc: capsLockUsage,
+            HIDKeyboardModifierMappingDst: f18Usage
+        ))
+        try writeMappings(nextMappings)
     }
 
     private func parsePropertyListStyleMappings(_ output: String) -> [HIDUserKeyMapping] {

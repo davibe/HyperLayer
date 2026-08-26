@@ -2,6 +2,7 @@ import AppKit
 import Carbon.HIToolbox
 import CoreGraphics
 import Foundation
+import OSLog
 
 private let syntheticEventMarker: Int64 = 0x48594C52
 
@@ -24,6 +25,7 @@ final class KeyboardEngine: ObservableObject {
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private let logger = Logger(subsystem: "com.dade.HyperLayer", category: "keyboard")
     private var shortcutsByTriggerKeyCode: [UInt16: Shortcut] = [:]
     private var layerIsDown = false
     private var layerFlagsChangedIsDown = false
@@ -118,6 +120,7 @@ final class KeyboardEngine: ObservableObject {
 
     fileprivate func handle(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            logger.notice("Keyboard event tap was disabled by macOS; re-enabling it")
             if let eventTap {
                 CGEvent.tapEnable(tap: eventTap, enable: true)
             }

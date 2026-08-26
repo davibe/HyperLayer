@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import Foundation
+import OSLog
 import ServiceManagement
 
 enum RecordingTarget: Equatable {
@@ -30,9 +31,12 @@ final class AppState: ObservableObject {
     private let store = ConfigStore()
     private let menuBarController = MenuBarController()
     private let recordingEventTap = RecordingEventTap()
+    private let logger = Logger(subsystem: "com.dade.HyperLayer", category: "runtime")
     private var localMonitor: Any?
     private weak var mainWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
+    private var workspaceObservers = [NSObjectProtocol]()
+    private var recoveryWorkItems = [DispatchWorkItem]()
 
     init() {
         config = store.load()
@@ -64,10 +68,17 @@ final class AppState: ObservableObject {
             name: NSApplication.willTerminateNotification,
             object: nil
         )
+        observeWorkspaceWakeEvents()
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(appDidBecomeActive),
             name: NSApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(displayConfigurationDidChange),
+            name: NSApplication.didChangeScreenParametersNotification,
             object: nil
         )
 
@@ -81,6 +92,9 @@ final class AppState: ObservableObject {
 
     deinit {
         recordingEventTap.stop()
+        recoveryWorkItems.forEach { $0.cancel() }
+        let workspaceNotificationCenter = NSWorkspace.shared.notificationCenter
+        workspaceObservers.forEach { workspaceNotificationCenter.removeObserver($0) }
         if let localMonitor {
             NSEvent.removeMonitor(localMonitor)
         }
@@ -368,6 +382,55 @@ final class AppState: ObservableObject {
         }
     }
 
+    private func observeWorkspaceWakeEvents() {
+        let notificationCenter = NSWorkspace.shared.notificationCenter
+        let wakeEvents: [Notification.Name] = [
+            NSWorkspace.didWakeNotification,
+            NSWorkspace.screensDidWakeNotification
+        ]
+
+        workspaceObservers = wakeEvents.map { name in
+            notificationCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] notification in
+                self?.scheduleKeyboardRecovery(reason: notification.name.rawValue)
+            }
+        }
+    }
+
+    private func scheduleKeyboardRecovery(reason: String) {
+        logger.info("Scheduling keyboard recovery after \(reason, privacy: .public)")
+        recoveryWorkItems.forEach { $0.cancel() }
+        recoveryWorkItems.removeAll()
+
+        // Bluetooth and external keyboards may return after the initial wake notification.
+        for delay in [1.0, 4.0] {
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.recoverKeyboardLayerAfterWake()
+            }
+            recoveryWorkItems.append(workItem)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+        }
+    }
+
+    private func recoverKeyboardLayerAfterWake() {
+        guard config.isEnabled,
+              permissions.accessibilityGranted,
+              permissions.inputMonitoringGranted else {
+            reconcileRuntime(refreshPermissions: true)
+            return
+        }
+
+        engine.stop()
+        remapper.refresh()
+
+        if remapper.isInstalled {
+            _ = engine.start()
+        }
+        logger.info(
+            "Keyboard recovery completed: remapper=\(self.remapper.isInstalled), eventTap=\(self.engine.isRunning)"
+        )
+        updateRuntimeStatus()
+    }
+
     @objc private func appWillTerminate() {
         engine.stop()
         remapper.restore()
@@ -375,5 +438,9 @@ final class AppState: ObservableObject {
 
     @objc private func appDidBecomeActive() {
         refreshOpenAtLoginStatus()
+    }
+
+    @objc private func displayConfigurationDidChange() {
+        scheduleKeyboardRecovery(reason: NSApplication.didChangeScreenParametersNotification.rawValue)
     }
 }
