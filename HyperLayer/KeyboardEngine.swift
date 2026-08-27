@@ -2,7 +2,6 @@ import AppKit
 import Carbon.HIToolbox
 import CoreGraphics
 import Foundation
-import IOKit.hid
 import OSLog
 
 private let syntheticEventMarker: Int64 = 0x48594C52
@@ -20,100 +19,6 @@ private let keyboardTapCallback: CGEventTapCallBack = { proxy, type, event, refc
     return engine.handle(proxy: proxy, type: type, event: event)
 }
 
-private let physicalCapsLockCallback: IOHIDValueCallback = { context, result, _, value in
-    guard result == kIOReturnSuccess, let context else {
-        return
-    }
-
-    let element = IOHIDValueGetElement(value)
-    guard IOHIDElementGetUsagePage(element) == kHIDPage_KeyboardOrKeypad,
-          IOHIDElementGetUsage(element) == kHIDUsage_KeyboardCapsLock else {
-        return
-    }
-
-    let monitor = Unmanaged<PhysicalCapsLockMonitor>.fromOpaque(context).takeUnretainedValue()
-    monitor.received(isDown: IOHIDValueGetIntegerValue(value) != 0)
-}
-
-private final class PhysicalCapsLockMonitor {
-    private let manager: IOHIDManager
-    private let onStateChange: (Bool) -> Void
-    private let logger = Logger(subsystem: "com.dade.HyperLayer", category: "physical-keyboard")
-    private(set) var isRunning = false
-
-    init(onStateChange: @escaping (Bool) -> Void) {
-        manager = IOHIDManagerCreate(kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone))
-        self.onStateChange = onStateChange
-    }
-
-    deinit {
-        stop()
-    }
-
-    @discardableResult
-    func start() -> Bool {
-        guard !isRunning else {
-            return true
-        }
-
-        let deviceMatching: [String: Int] = [
-            kIOHIDDeviceUsagePageKey: kHIDPage_GenericDesktop,
-            kIOHIDDeviceUsageKey: kHIDUsage_GD_Keyboard
-        ]
-        let inputMatching: [String: Int] = [
-            kIOHIDElementUsagePageKey: kHIDPage_KeyboardOrKeypad,
-            kIOHIDElementUsageKey: kHIDUsage_KeyboardCapsLock
-        ]
-
-        IOHIDManagerSetDeviceMatching(manager, deviceMatching as CFDictionary)
-        IOHIDManagerSetInputValueMatching(manager, inputMatching as CFDictionary)
-        IOHIDManagerRegisterInputValueCallback(
-            manager,
-            physicalCapsLockCallback,
-            Unmanaged.passUnretained(self).toOpaque()
-        )
-        IOHIDManagerScheduleWithRunLoop(
-            manager,
-            CFRunLoopGetMain(),
-            CFRunLoopMode.commonModes.rawValue
-        )
-
-        let result = IOHIDManagerOpen(manager, IOOptionBits(kIOHIDOptionsTypeNone))
-        guard result == kIOReturnSuccess else {
-            IOHIDManagerUnscheduleFromRunLoop(
-                manager,
-                CFRunLoopGetMain(),
-                CFRunLoopMode.commonModes.rawValue
-            )
-            logger.error("Could not open physical keyboard monitor: \(result)")
-            return false
-        }
-
-        isRunning = true
-        logger.info("Physical Caps Lock monitor started")
-        return true
-    }
-
-    func stop() {
-        guard isRunning else {
-            return
-        }
-
-        IOHIDManagerUnscheduleFromRunLoop(
-            manager,
-            CFRunLoopGetMain(),
-            CFRunLoopMode.commonModes.rawValue
-        )
-        IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone))
-        isRunning = false
-    }
-
-    fileprivate func received(isDown: Bool) {
-        logger.debug("Physical Caps Lock state: \(isDown)")
-        onStateChange(isDown)
-    }
-}
-
 final class KeyboardEngine: ObservableObject {
     @Published private(set) var isRunning = false
     @Published private(set) var lastError: String?
@@ -121,13 +26,9 @@ final class KeyboardEngine: ObservableObject {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private let logger = Logger(subsystem: "com.dade.HyperLayer", category: "keyboard")
-    private lazy var physicalCapsLockMonitor = PhysicalCapsLockMonitor { [weak self] isDown in
-        self?.handlePhysicalLayerState(isDown: isDown)
-    }
     private var shortcutsByTriggerKeyCode: [UInt16: Shortcut] = [:]
     private var layerIsDown = false
     private var layerFlagsChangedIsDown = false
-    private var physicalLayerState: Bool?
     private var suppressedLayerKeys = Set<UInt16>()
     private let syntheticModifierKeys = [
         SyntheticModifierKey(flag: .maskControl, keyCode: CGKeyCode(kVK_Control)),
@@ -194,7 +95,6 @@ final class KeyboardEngine: ObservableObject {
         runLoopSource = source
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
-        _ = physicalCapsLockMonitor.start()
 
         resetLayerState()
         isRunning = true
@@ -203,7 +103,6 @@ final class KeyboardEngine: ObservableObject {
     }
 
     func stop() {
-        physicalCapsLockMonitor.stop()
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
         }
@@ -215,7 +114,6 @@ final class KeyboardEngine: ObservableObject {
         }
         eventTap = nil
         runLoopSource = nil
-        physicalLayerState = nil
         resetLayerState()
         isRunning = false
     }
@@ -267,15 +165,6 @@ final class KeyboardEngine: ObservableObject {
     }
 
     private func handleLayerKey(type: CGEventType, event: CGEvent) {
-        if let physicalLayerState {
-            if physicalLayerState {
-                layerIsDown = true
-            } else {
-                resetLayerState()
-            }
-            return
-        }
-
         switch type {
         case .keyDown:
             layerIsDown = true
@@ -291,15 +180,6 @@ final class KeyboardEngine: ObservableObject {
             }
         default:
             break
-        }
-    }
-
-    private func handlePhysicalLayerState(isDown: Bool) {
-        physicalLayerState = isDown
-        if isDown {
-            layerIsDown = true
-        } else {
-            resetLayerState()
         }
     }
 
