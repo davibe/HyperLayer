@@ -250,6 +250,12 @@ final class AppState: ObservableObject {
             return
         }
 
+        guard permissions.secureInputOwner == nil else {
+            engine.stop()
+            updateRuntimeStatus()
+            return
+        }
+
         if !engine.isRunning && !engine.start() {
             remapper.restore()
         }
@@ -342,6 +348,8 @@ final class AppState: ObservableObject {
             runtimeStatus = "Waiting for Accessibility"
         } else if !permissions.inputMonitoringGranted {
             runtimeStatus = "Waiting for Input Monitoring"
+        } else if let secureInputOwner = permissions.secureInputOwner {
+            runtimeStatus = "Paused by Secure Input (\(secureInputOwner.name))"
         } else if !remapper.isInstalled {
             runtimeStatus = remapper.lastError ?? "Waiting for Caps Lock remap"
         } else if engine.isRunning {
@@ -414,7 +422,8 @@ final class AppState: ObservableObject {
     private func recoverKeyboardLayerAfterWake() {
         guard config.isEnabled,
               permissions.accessibilityGranted,
-              permissions.inputMonitoringGranted else {
+              permissions.inputMonitoringGranted,
+              permissions.secureInputOwner == nil else {
             reconcileRuntime(refreshPermissions: true)
             return
         }

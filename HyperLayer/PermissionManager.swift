@@ -3,9 +3,15 @@ import ApplicationServices
 import CoreGraphics
 import Foundation
 
+struct SecureInputOwner: Equatable {
+    let processIdentifier: pid_t
+    let name: String
+}
+
 final class PermissionManager: ObservableObject {
     @Published private(set) var accessibilityGranted = false
     @Published private(set) var inputMonitoringGranted = false
+    @Published private(set) var secureInputOwner: SecureInputOwner?
 
     private var timer: Timer?
 
@@ -31,6 +37,7 @@ final class PermissionManager: ObservableObject {
     func refresh() {
         accessibilityGranted = AXIsProcessTrusted()
         inputMonitoringGranted = CGPreflightListenEventAccess()
+        secureInputOwner = currentSecureInputOwner()
     }
 
     func requestAccessibility() {
@@ -54,6 +61,23 @@ final class PermissionManager: ObservableObject {
             return
         }
         NSWorkspace.shared.open(url)
+    }
+
+    private func currentSecureInputOwner() -> SecureInputOwner? {
+        guard let session = CGSessionCopyCurrentDictionary() as? [String: Any],
+              let processNumber = session["kCGSSessionSecureInputPID"] as? NSNumber else {
+            return nil
+        }
+
+        let processIdentifier = processNumber.int32Value
+        guard processIdentifier > 0,
+              processIdentifier != ProcessInfo.processInfo.processIdentifier else {
+            return nil
+        }
+
+        let name = NSRunningApplication(processIdentifier: processIdentifier)?.localizedName
+            ?? "PID \(processIdentifier)"
+        return SecureInputOwner(processIdentifier: processIdentifier, name: name)
     }
 
 }
